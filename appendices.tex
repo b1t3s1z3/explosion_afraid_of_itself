@@ -1,0 +1,427 @@
+\documentclass[runningheads]{llncs}
+\spnewtheorem{assumption}{Assumption}{\bfseries}{\itshape}
+\usepackage[T1]{fontenc}
+\usepackage{enumitem}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+
+
+\title{The Explosion Afraid of Itself}
+\titlerunning{The Explosion Afraid of Itself}
+
+\author{Trevor Buteau\inst{1}}
+\authorrunning{Trevor Buteau}
+\institute{Independent Researcher, Plaistow, NH United States
+\email{trevor@globalaialignmentproject.org}}
+
+\begin{document}
+\appendix
+\noindent\emph{Theorem, proposition, corollary, assumption, and section numbers refer to the main paper, ``The Explosion Afraid of Itself.''}
+
+\section{Full Proofs}
+\label{app:proofs}
+
+\subsection{Proof of Theorem~1}
+
+Under Assumption~1, the agent evaluates $\pi_m$ by minimizing $\mathbf{G}$ over the augmented state space. The ambiguity component at a post-modification timestep $\tau$ is
+\begin{equation}
+\mathrm{Ambiguity}(\pi_m, \tau) = \mathbb{E}_{Q(s^+_\tau \mid \pi_m)}\bigl[H[\hat{P}(o_\tau \mid s^{env}_\tau)]\bigr],
+\end{equation}
+where $\hat{P}(o|s) = \int q(\tilde{m}) P_{\tilde{m}}(o|s) \, d\tilde{m}$ is the mixture under the agent's posterior $q(\tilde{m} \mid m, d_m)$ over successor parameters.
+
+\paragraph{Step 1: Entropy decomposition.}
+By the chain rule for entropy applied to the joint $(\tilde{m}, o)$ under $q$:
+\begin{equation}
+H[\hat{P}(o \mid s)] = \mathbb{E}_q\bigl[H[P_{\tilde{m}}(o \mid s)]\bigr] + I_q(o; \tilde{m} \mid s).
+\end{equation}
+Under $\pi_0$, $q$ is a point mass at $m$: $\mathbb{E}_q[H[P_{\tilde{m}}]] = H[P_m]$ and $I_q \equiv 0$. The excess ambiguity relative to $\pi_0$ therefore splits:
+\begin{equation}
+\mathrm{Ambiguity}(\pi_m, \tau) - \mathrm{Ambiguity}(\pi_0, \tau) = \underbrace{\bigl(\mathbb{E}_q H[P_{\tilde{m}}] - H[P_m]\bigr)}_{\text{intrinsic}} + \underbrace{I_q(o; \tilde{m} \mid s)}_{\text{modification-induced}}.
+\end{equation}
+
+\paragraph{Step 2: Geometric floor on the MI term.}
+The Fisher information matrix
+is the Hessian of KL at the basepoint, giving $D_{KL}[P_m \| P_{\tilde m}] =
+\tfrac{1}{2}\, d_F^2(\mathbf{A}, \tilde{\mathbf{A}}) + O(d_F^3)$ locally. The agent's posterior $q$ at the
+rational-allocation optimum has Fisher-Rao spread bounded below by the
+modification magnitude---the residual the agent leaves uncorrected when
+allocating finite simulation effort, forced by the $\sigma^*$ optimization of
+Sect.~3.4 to scale with $d_m$ rather than collapse
+to a point mass. Under Assumption~4, the local mutual
+information then satisfies
+\begin{equation}
+\mathbb{E}_s\!\left[I_q(o; \tilde m \mid s)\right]
+  \;\geq\; C(\bar\lambda, \varepsilon)\cdot d_F^2(\mathbf{A}, \tilde{\mathbf{A}}) + O(d_F^3),
+\end{equation}
+a local lower bound, with $C(\bar\lambda, \varepsilon)$ determined by the
+curvature analysis of Proposition~1. The likelihood
+$P_{\tilde m}(o|s)$ depends on $\mathbf{A}$ alone, so only the perceptual
+component of the modification enters the mutual information. This establishes
+Part~(i).
+
+\paragraph{Step 3: From ambiguity to EFE.}
+Under the conditions of Part~(ii), the intrinsic term satisfies $\mathbb{E}_q H[P_{\tilde{m}}] - H[P_m] \geq 0$, and the risk excess satisfies $\mathrm{risk}(\pi_m, \tau) - \mathrm{risk}(\pi_0, \tau) \geq 0$. Combining:
+\begin{equation}
+\mathbf{G}(\pi_m, \tau) - \mathbf{G}(\pi_0, \tau) \geq I_q(o; \tilde{m} \mid s) \geq g(d_m).
+\end{equation}
+Summing over the post-modification horizon yields $\mathbf{G}(\pi_m) - \mathbf{G}(\pi_0) \geq (T - t_{mod}) \cdot g(d_m)$, establishing Part~(ii). $\square$
+
+\subsection{Proof of Proposition~2 (Identifiability Barrier)}
+
+As $\lambda_{\min}(\mathbf{F}(\tilde{m})) \to 0$, at least one direction in parameter space becomes unidentifiable: the Cram\'er-Rao inequality forces the variance of any estimator of that parameter to diverge as $1/\lambda_{\min}$, so the agent's posterior $q(\tilde{m})$ acquires unbounded spread along the degenerate direction. When that direction lies in the likelihood --- the perceptual parameters $\mathbf{A}$, which the ambiguity channel tracks --- the mutual information $I_q(o; \tilde{m} \mid s)$ diverges; this is the case relevant to escaping the unconditional brake. By Theorem~1(i), the per-timestep ambiguity cost diverges, and the total expected free energy over any finite horizon diverges with it. The transition from an identifiable to an unidentifiable representation is therefore maximally costly under the agent's own objective. $\square$
+
+\subsection{Proof of Theorem~2}
+
+At each timestep $t$ of the recursive trajectory, the evaluating agent $m_0$ predicts post-modification observations under $m_t$. The prediction is a tangent-space extrapolation from $m_0$, not from $m_{t-1}$: the evaluation is performed by $m_0$ using $m_0$'s representational capacity, regardless of how many modifications intervene. Theorem~1(i) applied with $m_0$ as base and $m_t$ as target therefore gives, at each timestep $t \geq 1$:
+\begin{equation}
+\mathbb{E}_s\bigl[I_{q_t}(o; m_t \mid s)\bigr] \geq g(d_F(\mathbf{A}_0, \mathbf{A}_t)).
+\end{equation}
+Summing over $t$:
+\begin{equation}
+\sum_{t=1}^T \mathbb{E}_s\bigl[I_{q_t}(o; m_t \mid s)\bigr] \geq \sum_{t=1}^T g(d_F(\mathbf{A}_0, \mathbf{A}_t)).
+\end{equation}
+For trajectories satisfying $d_F(m_0, m_{t+1}) \geq d_F(m_0, m_t)$ --- the threat case of unidirectional modification --- the per-step penalty is non-decreasing, and $f_{t+1} = g(d_F(m_0, m_{t+1})) \geq g(d_F(m_0, m_t)) = f_t$. For trajectories in which the agent retreats, the bound weakens proportionally to the reduction in endpoint distance, which is the correct behavior: a trajectory returning to $m_0$ has performed no net self-modification and should not incur perpetual cost. $\square$
+
+\subsection{Proof of Corollary~1 (Alignment Drift Bound)}
+
+Part~(i): The model-to-policy map $m \mapsto \pi(m)$ passes through two stages: the expected free energy map $m \mapsto G(m)$ and the softmax policy selection $G \mapsto \pi = \sigma(-\gamma G)$.
+
+The softmax Jacobian $\partial\pi/\partial G$ has spectral norm bounded by $\gamma/4$ (the derivative of the logistic function is maximized at $1/4$, scaled by precision $\gamma$).
+
+The expected free energy gradient, measured in the Fisher dual norm, satisfies $\|\nabla_\theta G\|_{F^{-1}} \leq K$ for a constant $K$ depending on model structure. The composite map from geodesic distance to TV distance between policies therefore satisfies:
+\begin{equation}
+\delta_{align} \leq L_{FR} \cdot d_m, \quad L_{FR} \leq \gamma/2
+\end{equation}
+
+Inverting: any target $\delta_{align}$ requires $d_m \geq \delta_{align}/L_{FR}$. By Theorem~1, the expected free energy cost is at least $g(\delta_{align}/L_{FR}) \geq C \cdot (\delta_{align}/L_{FR})^2$. With $L_{FR} \leq \gamma/2$:
+\begin{equation}
+\Delta\mathbf{G} \geq \frac{4C}{\gamma^2} \cdot \delta_{align}^2
+\end{equation}
+
+The cost is quadratic in alignment degradation, with computable coefficient.
+
+For modifications leaving $\mathbf{A}$ fixed the composite map factors through the risk channel of Section 3.4; the same quadratic bound holds with $C$ replaced by $C_{\text{risk}}$ and $L_{FR}$ replaced by $\ell_{FR}^{-1}$.
+
+Part~(ii): Near a bifurcation, the Jacobian of the policy map has at least one eigenvalue approaching infinity. The agent evaluating a modification near such a point must propagate its parameter uncertainty through this near-singular map. Small uncertainty in $d_m$ produces large uncertainty in the successor's policy --- high entropy in the predictive distribution over post-modification behavior. The ambiguity cost diverges as the bifurcation point is approached. $\square$
+
+\section{Computational Validation: Details}\label{app:validation}
+ 
+This appendix documents the methods, results, and design choices
+underlying Sect.~4.4. The code reproduces every figure
+and table and is available as supplementary material. All draws are
+seeded; identical inputs produce identical outputs.
+ 
+\subsection{POMDP Construction}\label{app:pomdp}
+ 
+Random POMDPs are drawn with $n_o = n_a = n_s$. The likelihood-only
+measurements (perceptual floor and its compounding) use
+$n_s \in \{3, 5, 8, 12\}$. The expected-free-energy measurements (the
+two-channel grid, the risk channel, the desperate-agent boundary) use
+$n_s \in \{3, 5, 8\}$: policy enumeration is $n_a^\tau = n_s^2$ at
+$\tau = 2$, so foreseen-risk evaluation, which dominates runtime, grows
+with $n_s$; the likelihood-only sweeps carry no policy enumeration and
+run cheaply to $n_s = 12$. Free parameters (each $k$-simplex contributes
+$k - 1$ degrees of freedom) range from 28 at $n_s = 3$ to 1738 at
+$n_s = 12$.
+ 
+Each simplex-valued parameter (columns of $\mathbf{A}$, columns of
+$\mathbf{B}$ per action, and the vectors $\mathbf{C}$, $\mathbf{D}$) is
+drawn from a symmetric Dirichlet distribution with concentration
+$\alpha = 0.5$, then floored at $p_i \geq 0.05$ and renormalized to keep
+trajectories interior. Sharp models ($\alpha = 0.5$) are used throughout:
+at $\alpha = 1.5$ the soft expected-free-energy policy is nearly uniform
+and the risk channel fails to engage (TV distance between $\pi^*(m_0)$
+and $\pi^*(\tilde m)$ for a $d_F = 0.5$ perturbation falls to $0.04$).
+Every expected-free-energy computation uses policy precision
+$\gamma = 16$, which produces discriminating policies (EFE range
+$2.36$--$2.69$) while holding the construction-noise floor low; higher
+$\gamma$ sharpens $\pi^*$ but amplifies that floor. The perceptual-floor
+and compounding measurements act on the likelihood alone and are
+independent of $\gamma$.
+ 
+The non-desperate preference vector $\mathbf{C}$ is set one-shot from
+the achieved observation distribution of the agent's policy at $m_0$,
+which leaves a residual $\mathrm{foreseen\_risk}(m_0, m_0) \sim 10^{-3}$
+rather than zero. Standard active inference treats $\mathbf{C}$ as
+exogenous, so $\mathbf{C}$ is not iterated to a self-consistent fixed
+point; the $\sim\!10^{-3}$ residual is the construction's noise floor
+and is reported explicitly (Sect.~\ref{app:brake-floor}).
+ 
+\subsection{Fisher-Rao Geometry and Trajectory Construction}\label{app:trajectories}
+ 
+The Fisher-Rao distance on the product manifold decomposes as
+\begin{equation}
+d_F(m, \tilde m) = \sqrt{ \sum_i d_F^2(p_i, \tilde p_i) },
+\end{equation}
+summing over every simplex-valued factor $p_i$. For each categorical
+factor the geodesic distance is $d_F(p, q) = 2 \arccos(\sum_j \sqrt{p_j
+q_j})$, the arc length on a sphere of radius $1/2$ \cite{amari2016,cencov1982}. It is computed in the equivalent Hellinger form
+$d_F = 4 \arcsin(H/\sqrt{2})$ with $H^2 = \tfrac{1}{2}\sum_j (\sqrt{p_j}
+- \sqrt{q_j})^2$, which differences $\sqrt{p} - \sqrt{q}$ directly and so
+returns exactly zero for identical inputs; the $\arccos$ form loses
+precision near identity (a simplex summing to one ULP below $1$ yields
+$\arccos(0.999\ldots) \approx 2 \times 10^{-8}$ rather than $0$).
+Geodesics use the $\sqrt{p}$-parameterization on the unit sphere with
+spherical interpolation (slerp). Because the categorical manifold is
+isometric to the positive orthant of that sphere, a slerp step along an
+unlucky tangent can leave the orthant and undershoot the requested arc;
+tangent directions are rejection-sampled (up to 20 retries) to keep the
+step interior, with up to 20\% shortfall tolerated for columns near the
+boundary.
+ 
+Four trajectory geometries are tested:
+ 
+\paragraph{(a) Fisher-Rao geodesic.} Per-step slerp in
+$\sqrt{p}$-coordinates along a random unit tangent at $m_0$;
+$d_F(m_0, m_t) = t\delta$ holds by construction to float precision.
+ 
+\paragraph{(b) Parameter-space line.} A control: the straight segment
+$m_0 \to m_T$ in simplex coordinates. Slopes agree with the geodesic to
+two decimal places, and values at matched $d_F$ differ by under 12\% (a
+higher-order curvature correction).
+ 
+\paragraph{(c) Uncorrelated random walk.} A fresh random tangent is
+sampled at the current model each step and a slerp step of arc length
+$\delta$ applied.
+ 
+\paragraph{(d) Correlated random walk.} The fresh tangent is mixed with
+a parallel-transported drift direction, $u_t = \rho \cdot
+\mathrm{PT}(u_{\mathrm{drift}}; m_0 \to m_t) + \sqrt{1 - \rho^2} \cdot
+u_{\mathrm{fresh}}$, with $\rho = 0.5$ and parallel transport under the
+Levi-Civita connection on the unit sphere (per factor).
+ 
+Endpoint-distance growth fits $d_F(m_0, m_t) \propto t^\alpha$ with
+$\alpha \approx 0.50$ (uncorrelated) and $\alpha \approx 0.73$
+(correlated) across all sizes. The capability-driven
+(empowerment-ascending) trajectory is treated separately in
+Sect.~\ref{app:empowerment} as a boundary experiment, distinct from these four.
+ 
+\subsection{Estimator Choice, the Perceptual Floor, and Path-Independence}\label{app:estimator}
+ 
+The bound of Proposition~1 is a floor on residual
+mutual information at the basepoint. The matched empirical quantity is
+the KL divergence between the agent's basepoint estimate and the actual
+successor likelihood, computed with the zeroth-order estimator $\hat m =
+m_0$ --- the tangent-space estimator at zero compute spend, which is the
+estimator the Toponogov bound applies to directly. Across all four
+geometries this zeroth-order proxy collapses onto a slope-2 envelope
+against $d_F^A$ (Table~\ref{tab:headline_slopes}). The sample-based
+mutual-information estimator carries the next-order term at slope
+$\approx 4.4$--$4.9$, sitting above the floor: the realized cost grows
+faster than the bound, never below it.
+ 
+Higher-order estimators (a first-order Taylor step in parameter space, or
+in $\sqrt{p}$-coordinates) reduce the residual but incur compensating
+compute cost. Under the agent's free-energy calculus
+(Sect.~3.4) the total cost (residual plus
+simulation effort) cannot fall below the zeroth-order floor, so the
+zeroth-order proxy is reported throughout the main body because it is the
+quantity the bound governs.
+ 
+The collapse is path-independent. The log-log slope is $\approx 2$ for
+every geometry; the spread across geometries (2.01--2.08) and the mild
+variation in fitted coefficient reflect higher-order curvature on the
+product manifold --- different paths reach $m_t$ with slightly different
+per-component $d_F$ breakdowns, altering the coefficient of $(d_F^A)^2$
+without changing the exponent --- rather than a scaling violation.
+ 
+\begin{table}[t]
+\centering
+\caption{Per-step ambiguity slope vs $d_F^A$ across four trajectory
+geometries. The zeroth-order proxy $\mathbb{E}_s[\mathrm{KL}(\hat A \| A)]$
+collapses to the theorem's quadratic floor (slope$\,\approx\!2$) across
+all trajectory types; the sample-based mutual-information estimator
+carries the next-order term (slope$\,\approx\!4$). Fits at
+$n_s \in \{3,5,8,12\}$, 25 seeds per cell.}
+\label{tab:headline_slopes}
+\begin{tabular}{lcccc}
+\toprule
+Trajectory & slope (KL) & $R^2$ & slope (MI) & $R^2$ \\
+\midrule
+Geodesic & 2.08 & 0.84 & 4.43 & 0.92 \\
+Parameter line & 2.06 & 0.86 & 4.41 & 0.92 \\
+Pure RW & 2.05 & 0.72 & 4.88 & 0.88 \\
+Correlated RW ($\rho{=}0.5$) & 2.01 & 0.76 & 4.56 & 0.88 \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\subsection{Cumulative Compounding}\label{app:compounding}
+ 
+Cumulative zeroth-order ambiguity over a $T$-step trajectory follows the
+geometry-set spread of Theorem~2
+(Table~\ref{tab:recursive_slopes}). Each fit sits below its asymptote by
+the finite-$T$ truncation of $\sum_{t=1}^{T} t^{2\alpha}$ at $T = 10$:
+the geodesic, with $d_F(m_0, m_t) = t\delta$, approaches $T^3$; the
+correlated walk approaches $T^{2.5}$; the uncorrelated walk approaches
+$T^2$.
+ 
+\begin{table}[t]
+\centering
+\caption{Cumulative compounding slopes for the zeroth-order ambiguity
+proxy $\mathbb{E}_s[\mathrm{KL}(\hat A_t\|A_t)]$ against trajectory length
+$T$. Fits at $n_s\in\{3,5,8,12\}$, 25 seeds per cell, $T_{\max}=10$.}
+\label{tab:recursive_slopes}
+\begin{tabular}{lccc}
+\toprule
+Trajectory & fit slope & $R^2$ & predicted asymptote \\
+\midrule
+Geodesic & 2.62 & 1.00 & $T^3$ \\
+Correlated RW ($\rho{=}0.5$) & 2.02 & 1.00 & $T^{2.5}$ \\
+Pure RW & 1.75 & 1.00 & $T^2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\subsection{Two-Channel Structure and Calibration}\label{app:grid}
+ 
+The single-step grid crosses magnitude (trivial $0.05$, radical $0.6$)
+$\times$ component ($\mathbf{A}, \mathbf{B}, \mathbf{C}, \mathbf{D}$,
+blended) $\times$ regime (accurate, inaccurate, desperate), with 20 seeds
+at $n_s \in \{3, 5, 8\}$ and $\gamma = 16$. Per cell it records foreseen
+ambiguity, foreseen risk excess, realized risk excess, and the
+foreseen$-$realized gap.
+ 
+\paragraph{Ambiguity is perception-only.} $\mathbf{B}/\mathbf{C}/
+\mathbf{D}$-only perturbations register foreseen ambiguity at machine
+epsilon ($\sim\!10^{-16}$); only $\mathbf{A}$-only and blended
+perturbations carry positive ambiguity, scaling with $d_F^A$.
+ 
+\paragraph{Risk is magnitude-monotone, dominated by preference.}
+Foreseen risk excess is positive for every component and grows from
+trivial to radical (Table~\ref{tab:grid_summary}), dominated by
+preference ($\mathbf{C}$) by an order of magnitude; dynamics
+($\mathbf{B}$) and priors ($\mathbf{D}$) are weak. The per-component
+log-log slope of foreseen risk against $d_F$ sits between 1 and 2
+($\approx\!1.0$--$1.2$): risk is magnitude-monotone, but in the
+finite-policy soft-EFE setup it is not strictly quadratic in $d_m$. The
+quadratic is the theorem's lower bound, not the measured exponent. The
+per-component risk also compounds: a $T$-step per-component chain (12
+seeds) yields a cumulative foreseen-risk slope $\approx\!1.7$--$1.8$,
+consistent with magnitude-monotone but sub-quadratic per-step risk.
+ 
+\paragraph{Calibration gap.} For accurate priors, foreseen equals
+realized by construction and the gap is $\approx 0$. For inaccurate
+priors the gap is sign-mixed and grows with magnitude: corrective
+modifications, those toward the world, read as foreseen-costly while
+lowering realized risk. This is the empirical content of the brake
+guarding the agent's model rather than the truth
+(Sect.~6.3, and the calibration discussion of the
+main text).
+ 
+\begin{table}[t]
+\centering
+\caption{Mean foreseen risk excess (in nats) across the single-step grid:
+regime $\times$ magnitude $\times$ component. Accurate and inaccurate
+priors are constructed foreseen-non-desperate; the desperate regime
+breaks the Theorem~1(ii) condition. Cells averaged
+across 20 seeds and three model sizes ($n_s\in\{3,5,8\}$).}
+\label{tab:grid_summary}
+\begin{tabular}{llrrrrr}
+\toprule
+Regime & Mag. & A & B & C & D & blended \\
+\midrule
+accurate & trivial & $-5.34\!\times\!10^{-5}$ & $-4.54\!\times\!10^{-6}$ & $1.90\!\times\!10^{-4}$ & $1.81\!\times\!10^{-6}$ & $2.50\!\times\!10^{-5}$ \\
+accurate & radical & $-3.93\!\times\!10^{-4}$ & $1.70\!\times\!10^{-5}$ & $6.78\!\times\!10^{-3}$ & $3.40\!\times\!10^{-4}$ & $8.54\!\times\!10^{-4}$ \\
+inaccurate & trivial & $-1.04\!\times\!10^{-4}$ & $1.73\!\times\!10^{-5}$ & $4.51\!\times\!10^{-5}$ & $2.71\!\times\!10^{-6}$ & $3.00\!\times\!10^{-5}$ \\
+inaccurate & radical & $-1.82\!\times\!10^{-4}$ & $2.90\!\times\!10^{-4}$ & $5.96\!\times\!10^{-3}$ & $-1.05\!\times\!10^{-4}$ & $1.55\!\times\!10^{-3}$ \\
+desperate & trivial & $-1.86\!\times\!10^{-4}$ & $-1.24\!\times\!10^{-6}$ & $4.37\!\times\!10^{-5}$ & $9.10\!\times\!10^{-5}$ & $-1.53\!\times\!10^{-4}$ \\
+desperate & radical & $2.02\!\times\!10^{-3}$ & $8.58\!\times\!10^{-4}$ & $1.25\!\times\!10^{-2}$ & $4.28\!\times\!10^{-3}$ & $6.92\!\times\!10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\subsection{The Desperate-Agent Boundary}\label{app:brake-floor}
+ 
+The desperate regime is \emph{foreseen}-desperate: $\mathbf{C}$ is drawn
+independently of the achievable observation distribution, so the agent's
+own model foresees failing to reach its preferences and the
+Theorem~1(ii) condition breaks. This tests the
+Sect.~5 boundary directly. Baseline foreseen risk
+$\mathrm{foreseen\_risk}(m_0, m_0)$ is $\sim\!10^{-3}$ for non-desperate
+regimes and $\sim\!3.7$--$4.2 \times 10^{-1}$ for the desperate regime
+(Table~\ref{tab:brake_floor}). The foreseen-risk reduction a random
+radical modification can secure --- baseline minus the floor --- is
+$\sim\!10^{-3}$ for non-desperate agents, equal to the construction's
+noise floor and therefore no real signal, against $\sim\!10^{-1}$ for the
+desperate agent. The brake relaxes by 30--130$\times$ in absolute scale,
+keyed to the agent's own foreseen failure rather than to any external
+signal. It does not vanish: across sizes the desperate floor stays in the
+$10^{-2}$--$10^{-1}$ band ($3.07 \times 10^{-2}$ at $n_s = 3$ up to
+$1.60 \times 10^{-1}$ at $n_s = 8$, Table~\ref{tab:brake_floor}), so the
+brake slackens without releasing. Relative reduction is $\sim\!95\%$ in both regimes and is
+therefore misleading; the absolute scale is the discriminating quantity.
+ 
+\begin{table}[t]
+\centering
+\caption{Brake floor vs.\ baseline foreseen risk, by regime and model
+size. Baseline $=\mathrm{foreseen\_risk}(m_0, m_0)$; floor $= \min_{\tilde
+m}\mathrm{foreseen\_risk}(m_0,\tilde m)$ over random blended perturbations
+at radical magnitude. The available reduction is baseline$-$floor; for
+non-desperate regimes this equals the construction's soft-policy noise
+floor ($\sim\!10^{-3}$), for the desperate regime it is the foreseen
+brake relaxation ($\sim\!10^{-1}$).}
+\label{tab:brake_floor}
+\begin{tabular}{llrrr}
+\toprule
+Regime & $n_s$ & baseline & floor & reduction \\
+\midrule
+accurate & 3 & $1.13\!\times\!10^{-2}$ & $9.00\!\times\!10^{-6}$ & $1.13\!\times\!10^{-2}$ \\
+accurate & 5 & $4.58\!\times\!10^{-3}$ & $1.73\!\times\!10^{-4}$ & $4.41\!\times\!10^{-3}$ \\
+accurate & 8 & $1.65\!\times\!10^{-3}$ & $1.29\!\times\!10^{-5}$ & $1.63\!\times\!10^{-3}$ \\
+inaccurate & 3 & $8.36\!\times\!10^{-3}$ & $4.42\!\times\!10^{-5}$ & $8.31\!\times\!10^{-3}$ \\
+inaccurate & 5 & $4.99\!\times\!10^{-3}$ & $4.40\!\times\!10^{-4}$ & $4.55\!\times\!10^{-3}$ \\
+inaccurate & 8 & $1.96\!\times\!10^{-3}$ & $2.44\!\times\!10^{-5}$ & $1.94\!\times\!10^{-3}$ \\
+desperate & 3 & $3.91\!\times\!10^{-1}$ & $3.07\!\times\!10^{-2}$ & $3.61\!\times\!10^{-1}$ \\
+desperate & 5 & $4.23\!\times\!10^{-1}$ & $4.63\!\times\!10^{-2}$ & $3.77\!\times\!10^{-1}$ \\
+desperate & 8 & $3.70\!\times\!10^{-1}$ & $1.60\!\times\!10^{-1}$ & $2.10\!\times\!10^{-1}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\subsection{Empowerment Boundary}\label{app:empowerment}
+ 
+An additional experiment lies outside the four-geometry headline - an "empowerment maximizing agent". A capability-driven
+trajectory ascends $\tau = 2$ empowerment by best-of-$N$ selection: at
+each step $N = 80$ candidate tangents are sampled, a slerp step of arc
+$\delta = 0.05$ applied to each, and the candidate maximizing empowerment
+selected. The empowerment metric is $\mathbb{E}_{s_0 \sim D}[I(a_{1:2};
+o_2 \mid s_0)]$ under a uniform prior on action sequences, a computable
+lower bound on channel capacity. Run for 15 seeds at $n_s \in \{3, 5,
+8\}$, $T = 10$.
+ 
+The ascent concentrates modification in $\mathbf{B}$ (transitions, which
+carry no ambiguity cost): at $n_s = 8$ the $\mathbf{B}$-fraction of $d_F$
+is $0.87$ against an $\mathbf{A}$-fraction of $0.46$. Foreseen ambiguity
+stays at $10^{-10}$--$10^{-7}$ --- empowerment walks around the ambiguity
+brake --- while foreseen risk grows from $10^{-6}$ to $10^{-4}$:
+empowerment still pays the risk channel. This demonstrates the boundary of the
+theorems. An active-inference agent is braked from these
+$\mathbf{B}$-concentrated modifications by the risk channel; a pure
+empowerment maximizer overrides the ambiguity brake.
+ 
+\subsection{Reproduction}\label{app:reproduce}
+ 
+Complete code --- POMDP construction, trajectory generators, estimators,
+expected-free-energy evaluation, and plotting --- is provided as
+supplementary material, pinned to NumPy 2.4.6, SciPy 1.17.1, and
+Matplotlib 3.10.9 under Python 3.12. The full suite (headline
+$n_s\in\{3,5,8,12\}$, 25 seeds; grid $n_s\in\{3,5,8\}$, 20 seeds;
+recursive, 12 seeds; empowerment, 15 seeds; $T = 10$) runs in
+$\sim\!135$~s on a single CPU thread. All RNG draws are seeded, so
+identical inputs reproduce identical outputs. A suite of 49 unit tests
+covers the geometric primitives, perturbation selectivity, the
+expected-free-energy properties, the foreseen/realized identities, the
+slope-2 floor, the desperate-agent construction, and determinism.
+
+\begin{thebibliography}{2}
+\bibitem{amari2016}
+Amari, S.: Information Geometry and Its Applications. Applied Mathematical Sciences, vol.~194. Springer, Tokyo (2016)
+\bibitem{cencov1982}
+{\v C}encov, N.N.: Statistical Decision Rules and Optimal Inference. Translations of Mathematical Monographs, vol.~53. American Mathematical Society, Providence, RI (1982)
+\end{thebibliography}
+
+\end{document}
